@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+
+from datetime import datetime
+from lxml import html
+from tqdm import tqdm
+import argparse
+import csv
+import gzip
+import logging
+import os
+import re
+import requests
+import time
+
+
+def get_price(url):
+    page = requests.get(url, headers={"User-Agent":"Defined"})
+    tree = html.fromstring(page.content)
+    matches = tree.xpath('//span[@id="priceblock_ourprice"]/text()')
+    return float(re.sub(r'\xa0.*','',matches[0]).replace(',','.'))
+
+
+def get_urls(fn):
+    with gzip.open(fn, 'rt') as f:
+        reader = csv.reader(f)
+        res = []
+        for x in reader:
+            res.append(x[0])
+
+        return res
+
+
+def update_prices(fn_url, fn_data, sleep=2):
+    urls = get_urls(fn = fn_url)
+
+    newdata = []
+    for url in tqdm(urls):
+        try:
+            newdata += [(url,
+                         datetime.now().timestamp(),
+                         get_price(url))]
+            time.sleep(sleep)
+        except Exception as e:
+            logging.warning("""
+            Cannot query %s
+            Error: %s
+            """ % (url, str(e)))
+
+    with gzip.open(fn_data, 'at') as f:
+        writer = csv.writer(f)
+        for x in newdata:
+            writer.writerow(x)
+
+
+if __name__=='__main__':
+    parser = argparse.ArgumentParser\
+        (formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--data_dir',
+                        default = os.path.join(os.path.expanduser("~"),
+                                               ".amazon_prices"),
+                        help = "Path to data directory")
+    parser.add_argument('--url_fn',
+                        default = 'urls.csv.gz',
+                        help = """A name of the csv file containing urls.
+
+                        The first column must be an url. The rest do not matter.
+                        """)
+    parser.add_argument('--data_fn',
+                        default = 'data.csv.gz',
+                        help = "Name of the file containing data")
+    parser.add_argument('--sleep',
+                        default = 5,
+                        help = "Number of seconds to sleep between requests")
+    parser.add_argument('command', help = "One of the commands: query (q), report (r)")
+
+    args = vars(parser.parse_args())
+    os.makedirs(args['data_dir'], exist_ok = True)
+
+
+    if args['command'] in ('query','q'):
+        update_prices(fn_url = os.path.join(args['data_dir'],
+                                            args['url_fn']),
+                      fn_data = os.path.join(args['data_dir'],
+                                             args['data_fn']),
+                      sleep = args['sleep'])

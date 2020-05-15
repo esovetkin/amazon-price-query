@@ -52,6 +52,18 @@ def update_prices(fn_url, fn_data, sleep=2):
             writer.writerow(x)
 
 
+def rotate_prices(fn_data):
+    with gzip.open(fn_data, 'rt') as old, \
+         gzip.open(fn_data + '.bak', 'wt') as new:
+        reader = csv.reader(old)
+        writer = csv.writer(new)
+
+        for x in reader:
+            writer.writerow(x)
+
+    os.replace(fn_data + '.bak', fn_data)
+
+
 if __name__=='__main__':
     parser = argparse.ArgumentParser\
         (formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -71,15 +83,17 @@ if __name__=='__main__':
     parser.add_argument('--sleep',
                         default = 5,
                         help = "Number of seconds to sleep between requests")
-    parser.add_argument('command', help = "One of the commands: query (q), report (r)")
+    parser.add_argument('command', help = "One of the commands: query, report, rotate")
 
     args = vars(parser.parse_args())
     os.makedirs(args['data_dir'], exist_ok = True)
 
+    fn_url = os.path.join(args['data_dir'], args['url_fn'])
+    fn_data = os.path.join(args['data_dir'], args['data_fn'])
 
     if args['command'] in ('query','q'):
-        update_prices(fn_url = os.path.join(args['data_dir'],
-                                            args['url_fn']),
-                      fn_data = os.path.join(args['data_dir'],
-                                             args['data_fn']),
+        update_prices(fn_url = fn_url, fn_data = fn_data,
                       sleep = args['sleep'])
+
+    if args['command'] in ('rotate'):
+        rotate_prices(fn_data = fn_data)

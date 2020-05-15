@@ -11,6 +11,7 @@ import os
 import re
 import requests
 import time
+import subprocess
 
 
 def get_price(url):
@@ -64,6 +65,13 @@ def rotate_prices(fn_data):
     os.replace(fn_data + '.bak', fn_data)
 
 
+def report(fn_url, fn_data):
+    path = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.join(path,'report.R')
+
+    subprocess.run(['Rscript',path,fn_url,fn_data])
+
+
 if __name__=='__main__':
     parser = argparse.ArgumentParser\
         (formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -97,3 +105,6 @@ if __name__=='__main__':
 
     if args['command'] in ('rotate'):
         rotate_prices(fn_data = fn_data)
+
+    if args['command'] in ('report','r'):
+        report(fn_url = fn_url, fn_data = fn_data)

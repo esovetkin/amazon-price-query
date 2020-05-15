@@ -36,6 +36,11 @@ amazon-tracker rotate
 ```
 to recompress the data file.
 
+To run a report on the collected data say
+```
+amazon-tracker report
+```
+
 See
 ```
 amazon-tracker --help

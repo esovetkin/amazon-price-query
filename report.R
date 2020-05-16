@@ -33,21 +33,9 @@ report <- function(data) {
             "min","mean","max","last","url")]
 }
 
-read_data <- function(fn_url, fn_data)
-{
-  url <- read.csv(fn_url, header = FALSE)
-  data <- read.csv(fn_data, header = FALSE)
-
-  colnames(data) <- c("url","time","price")
-  colnames(url) <- c("url","comment")
-
-  data <- merge(data, url, by="url")
-  data <- data[order(data$time),]
-
-  data
-}
-
 options(width=150)
 args <- commandArgs(trailingOnly = TRUE)
+source(paste(args[3],"functions.R",sep="/"))
+
 data <- read_data(fn_url = args[1],fn_data = args[2])
 print(report(data))

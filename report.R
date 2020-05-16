@@ -13,6 +13,9 @@ report <- function(data) {
                 "min"=round(min(d$price),2),
                 "max"=round(max(d$price),2),
                 "mean"=round(mean(d$price),2),
+                "ndays"=round((max(d$time) - min(d$time))/60/60/24),
+                "ecdf"=round(ecdf(d$price)(tail(d$price,1)),2),
+                "spread"=round((max(d$price) - min(d$price))/max(d$price),2),
                 "last"=round(tail(d$price,1),2))
             }))
   report <- as.data.frame(report)
@@ -26,7 +29,8 @@ report <- function(data) {
   report$message[abs(report$last - report$min) < .Machine$double.eps^0.5 &
                    abs(report$max - report$min) > .Machine$double.eps^0.5] <- "!!!"
 
-  report[,c("comment","message","min","max","mean","last","url")]
+  report[,c("comment","message","ecdf","ndays","spread",
+            "min","mean","max","last","url")]
 }
 
 read_data <- function(fn_url, fn_data)

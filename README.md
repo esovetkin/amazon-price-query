@@ -2,12 +2,14 @@
 
 Collect and report any changes in prices
 
-## Installation
+## Installation and dependencies
+
+The script uses python to query data, and R for reports.
 
 ```
 make init
 ```
-will install all the python dependencies.
+will install all the python and R dependencies.
 
 ## Usage
 
@@ -41,8 +43,26 @@ To run a report on the collected data say
 amazon-tracker report
 ```
 
+```
+amazon-tracker plot
+```
+will make a plot of prices variations in the data directory (default `~/.amazon-tracker/`).
+
 See
 ```
 amazon-tracker --help
 ```
 for full options.
+
+### Query data from arbitrary site
+
+In order to query price (numerical value) from any other website, one
+can extend the "how.csv" table.
+
+The how.csv table is given in the following format:
+```
+".*www\.amazon.*","//span[@id='priceblock_ourprice']/text()"
+".*www\.bike-components.*","//span[@id='module-product-detail-price']/text()"
+```
+The first column gives a regular expression to be matched with url,
+the second column specifies the xml block to search in a page.

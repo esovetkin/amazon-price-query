@@ -17,8 +17,17 @@ import subprocess
 def get_price(url):
     page = requests.get(url, headers={"User-Agent":"Defined"})
     tree = html.fromstring(page.content)
-    matches = tree.xpath('//span[@id="priceblock_ourprice"]/text()')
-    return float(re.sub(r'\xa0.*','',matches[0]).replace(',','.'))
+
+    if re.match(r'.*www\.amazon.*', url):
+        matches = tree.xpath('//span[@id="priceblock_ourprice"]/text()')
+
+    if re.match(r'.*www\.bike-components.*', url):
+        matches = tree.xpath('//span[@id="module-product-detail-price"]/text()')
+
+    if len(matches):
+        return float(re.sub('[^0-9,.]','',matches[0]).replace(',','.'))
+    else:
+        raise RuntimeError("No matches found!")
 
 
 def get_urls(fn):

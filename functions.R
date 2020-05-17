@@ -6,6 +6,7 @@ read_data <- function(fn_url, fn_data)
   colnames(data) <- c("url","time","price")
   colnames(url) <- c("url","comment")
 
+  data <- data[!is.na(data$price),]
   data <- merge(data, url, by="url")
   data <- data[order(data$time),]
 

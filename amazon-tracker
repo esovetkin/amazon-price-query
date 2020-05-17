@@ -14,15 +14,14 @@ import time
 import subprocess
 
 
-def get_price(url):
+def get_price(url, hows):
     page = requests.get(url, headers={"User-Agent":"Defined"})
     tree = html.fromstring(page.content)
 
-    if re.match(r'.*www\.amazon.*', url):
-        matches = tree.xpath('//span[@id="priceblock_ourprice"]/text()')
-
-    if re.match(r'.*www\.bike-components.*', url):
-        matches = tree.xpath('//span[@id="module-product-detail-price"]/text()')
+    for how in hows:
+        if re.match(how[0], url):
+            matches = tree.xpath(how[1])
+            break
 
     if len(matches):
         return float(re.sub('[^0-9,.]','',matches[0]).replace(',','.'))
@@ -40,7 +39,17 @@ def get_urls(fn):
         return res
 
 
-def update_prices(fn_url, fn_data, sleep=2):
+def get_hows(fn):
+    with open(fn, 'r') as f:
+        reader = csv.reader(f)
+        res = []
+        for x in reader:
+            res.append(x)
+
+        return res
+
+
+def update_prices(fn_url, fn_data, hows, sleep=2):
     urls = get_urls(fn = fn_url)
 
     newdata = []
@@ -48,7 +57,7 @@ def update_prices(fn_url, fn_data, sleep=2):
         try:
             newdata += [(url,
                          datetime.now().timestamp(),
-                         get_price(url))]
+                         get_price(url, hows))]
             time.sleep(sleep)
         except Exception as e:
             logging.warning("""
@@ -98,6 +107,13 @@ if __name__=='__main__':
     parser.add_argument('--data_fn',
                         default = 'data.csv.gz',
                         help = "Name of the file containing data")
+    parser.add_argument('--how_path',
+                        default = os.path.join\
+                        (os.path.dirname\
+                         (os.path.realpath\
+                          (__file__)),
+                         "how.csv"),
+                        help= "Name of the csv file containing how to process different url")
     parser.add_argument('--sleep',
                         default = 5,
                         help = "Number of seconds to sleep between requests")
@@ -110,8 +126,9 @@ if __name__=='__main__':
     fn_data = os.path.join(args['data_dir'], args['data_fn'])
 
     if args['command'] in ('query','q'):
+        hows = get_hows(args['how_path'])
         update_prices(fn_url = fn_url, fn_data = fn_data,
-                      sleep = args['sleep'])
+                      hows = hows, sleep = args['sleep'])
 
     if args['command'] in ('rotate'):
         rotate_prices(fn_data = fn_data)

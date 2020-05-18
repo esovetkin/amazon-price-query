@@ -115,7 +115,7 @@ if __name__=='__main__':
                          "how.csv"),
                         help= "Name of the csv file containing how to process different url")
     parser.add_argument('--sleep',
-                        default = 5,
+                        default = 10,
                         help = "Number of seconds to sleep between requests")
     parser.add_argument('command', help = "One of the commands: query, report, rotate, plot")
 

@@ -1,2 +1,3 @@
 ".*www\.amazon.*","//span[@id='priceblock_ourprice']/text()"
 ".*www\.bike-components.*","//span[@id='module-product-detail-price']/text()"
+".*www\.ebay.*","//span[@id='prcIsum']/text()"

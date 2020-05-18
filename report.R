@@ -28,6 +28,7 @@ report <- function(data) {
   report$message[report$last < report$mean] <- "!!"
   report$message[abs(report$last - report$min) < .Machine$double.eps^0.5 &
                    abs(report$max - report$min) > .Machine$double.eps^0.5] <- "!!!"
+  report$message[abs(report$max - report$min) < .Machine$double.eps^0.5] <- "*"
 
   report[,c("comment","message","ecdf","ndays","spread",
             "min","mean","max","last","url")]

@@ -34,7 +34,10 @@ def get_urls(fn):
         reader = csv.reader(f)
         res = []
         for x in reader:
-            res.append(x[0])
+            try:
+                res.append(x[0])
+            except:
+                continue
 
         return res
 
